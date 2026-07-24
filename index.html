@@ -39,8 +39,8 @@
 
         .app-container {
             width: 100%;
-            max-width: 410px;
-            background: rgba(255, 255, 255, 0.88);
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border-radius: 35px;
@@ -52,13 +52,13 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            min-height: 560px;
+            min-height: 580px;
         }
 
-        /* شريط المستوى في الأعلى */
+        /* شريط المستوى علوي */
         .level-header {
             width: 100%;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             border: 2px solid #FFE4E8;
             border-radius: 20px;
             padding: 10px 15px;
@@ -200,10 +200,10 @@
         .question-card {
             background: #FFFFFF;
             border-radius: 25px;
-            padding: 25px 20px;
+            padding: 22px 18px;
             box-shadow: 0 12px 30px rgba(255, 107, 139, 0.12);
             width: 100%;
-            margin-bottom: 18px;
+            margin-bottom: 15px;
             border: 2px solid #FFE4E8;
         }
 
@@ -214,7 +214,7 @@
             font-size: 14px;
             font-weight: 800;
             color: white;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .tag-truth { background: #4ECDC4; }
@@ -222,15 +222,60 @@
         .tag-wyr { background: #A55AEA; }
 
         .question-text {
-            font-size: 18px;
-            line-height: 1.7;
+            font-size: 17px;
+            line-height: 1.6;
             color: #3B2D2E;
             font-weight: 700;
-            min-height: 80px;
+            min-height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
+
+        /* حقول الإجابة والمدخلات */
+        .input-box {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #FFE4E8;
+            border-radius: 18px;
+            font-size: 15px;
+            outline: none;
+            margin-top: 10px;
+            transition: border-color 0.3s;
+            background: #FFF0F5;
+            color: #3B2D2E;
+        }
+
+        .input-box:focus {
+            border-color: #FF6B8B;
+            background: #FFFFFF;
+        }
+
+        .dare-buttons {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .btn-dare-sub {
+            flex: 1;
+            padding: 14px;
+            border-radius: 18px;
+            border: none;
+            font-size: 16px;
+            font-weight: 800;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-dare-sub:active {
+            transform: scale(0.95);
+        }
+
+        .btn-yes { background: linear-gradient(135deg, #2ECC71, #27AE60); }
+        .btn-no { background: linear-gradient(135deg, #E74C3C, #C0392B); }
 
         .btn-action {
             background: linear-gradient(45deg, #FF6B8B, #FF8E9E);
@@ -244,6 +289,7 @@
             cursor: pointer;
             width: 100%;
             transition: all 0.2s ease;
+            margin-top: 10px;
         }
 
         .btn-action:active {
@@ -274,7 +320,7 @@
         <div id="start-screen" class="screen active">
             <div class="hero-icon">🎲🌸✨</div>
             <h1>لعبة تيمي الخاصة</h1>
-            <p class="subtitle">أهلاً بكِ يا تيمي! تقدمكِ يُحفظ تلقائياً لتكملي من حيث وقفتِ دائماً 💖</p>
+            <p class="subtitle">أهلاً بكِ يا تيمي! تقدمكِ يُحفظ تلقائياً وتكملين دائماً من نفس المكان 💖</p>
             <button class="btn-action" onclick="startGame()">متابعة اللعب 💖</button>
         </div>
 
@@ -302,14 +348,26 @@
             <div class="question-card">
                 <div id="tag-badge" class="tag-badge">صراحة</div>
                 <div id="question-text" class="question-text">جارِ جلب السؤال...</div>
+
+                <div id="text-input-section" style="display: none;">
+                    <textarea id="user-answer" class="input-box" rows="2" placeholder="اكتبي إجابتكِ هنا... ✍️"></textarea>
+                    <button class="btn-action" onclick="submitAnswer()">إرسال واجتياز المرحلة ✨</button>
+                </div>
+
+                <div id="dare-input-section" style="display: none;">
+                    <div class="dare-buttons">
+                        <button class="btn-dare-sub btn-yes" onclick="submitDare(true)">نفذتها ✅</button>
+                        <button class="btn-dare-sub btn-no" onclick="submitDare(false)">لم أنفذها ❌</button>
+                    </div>
+                </div>
             </div>
-            <button class="btn-action" onclick="showChoiceScreen()">السؤال التالي 🔄</button>
+
             <span class="reset-link" onclick="resetProgress()">إعادة البدء من المستوى الأول</span>
         </div>
     </div>
 
     <script>
-        // إعدادات الصوت والتنغيم الهادئ
+        // إعدادات الصوت
         let audioCtx = null;
         let isPlaying = false;
         let timerId = null;
@@ -359,12 +417,12 @@
             }
         }
 
-        // إدارة المستوى والتقدم والحفظ
+        // إداراة حفظ التقدم والمستوى
         let totalAnswered = parseInt(localStorage.getItem('timi_answered') || '0');
 
         function updateLevelUI() {
             const level = Math.floor(totalAnswered / 5) + 1;
-            const progressInLevel = (totalAnswered % 5) * 20; // كل مستوى 5 أسئلة
+            const progressInLevel = (totalAnswered % 5) * 20; 
             
             document.getElementById('level-title').innerText = `المستوى ${level} 🌟 (${totalAnswered} سؤال مكتمل)`;
             document.getElementById('level-bar-fill').style.width = `${progressInLevel}%`;
@@ -392,33 +450,25 @@
             showChoiceScreen();
         }
 
-        // الأسئلة والتحديات
+        // قائمة الأسئلة والتحديات
         const truthQuestions = [
             "ما هي أكثر صفة تحبها في شخصيتك؟", "ما هو الموقف الذي جعلك تبتسم من قلبك مؤخراً؟",
             "ما هي الهواية التي تتمنى أن تتعلمها في أقرب وقت؟", "ما هو المكان الذي تشعر فيه بالراحة التامة؟",
             "ما هي العادة اليومية التي لا تستغني عنها أبداً؟", "ما هو الشيء الذي يجعلك تضحك بسهولة؟",
             "ما هو أكثر نصيحة أثرت في حياتك ومن مين؟", "ما هي الأكلة التي لا تمل منها مهما أكلتها؟",
-            "ما هو أكبر هدف تسعى لتحقيقه هذا العام؟", "ما هي الذكرى الجميلة التي تتذكرها من طفولتك؟",
-            "ما هي الكلمة التي تؤثر فيك وتغير مزاجك للأفضل؟", "ما هي الصفة التي تحرص على وجودها في أصدقائك؟",
-            "ما هو الفيلم أو المسلسل الذي يمكن أن تشاهده أكثر من مرة؟", "ما هو الشيء الذي يجعلك تشعر بالفخر بنفسك؟",
-            "ما هي الحلم البسيط الذي تتمنى تحقيقه قريباً؟", "ما هي المادة الدراسية التي كنت تحبها أكثر من غيرها؟",
-            "ما هو اللون الذي تشعر أنه يعبر عن شخصيتك؟", "ما هو الشيء الذي إذا امتلكته سيجعل يومك أسهل؟",
-            "ما هو الشيء الذي تعلمته مؤخراً وأفادك؟", "ما هي الرحلة التي لا تنسى في حياتك؟"
+            "ما هو أكبر هدف تسعى لتحقيقه هذا العام؟", "ما هي الذكرى الجميلة التي تتذكرها من طفولتك؟"
         ];
 
         const dareChallenges = [
             "جرأة: قل بيتاً من الشعر أو عبارة لطيفة لكل الموجودين.", "جرأة: ابتسم لمدة دقيقة كاملة دون أن تتكلم.",
             "جرأة: اصنع طائرة ورقية واكتب عليها أمنية واقذفها.", "جرأة: غنّ مقطعاً صغيراً من أذكر أغنية تحبها.",
-            "جرأة: ارسم وجه شخصيتك الكرتونية المفضلة في 30 ثانية.", "جرأة: تحدث بلغة فرنسية أو إنجليزية وهمية لمدة دقيقة.",
-            "جرأة: شرب كوب كامل من الماء دفعة واحدة.", "جرأة: أرسل إيموجي وردة لأول شخص في قائمة الرسائل لديك.",
-            "جرأة: قل 5 أشياء تحبها في مدينتك بسرعة دون تفكير.", "جرأة: قف على قدم واحدة لمدة 45 ثانية."
+            "جرأة: ارسم وجه شخصيتك الكرتونية المفضلة في 30 ثانية.", "جرأة: تحدث بلغة فرنسية أو إنجليزية وهمية لمدة دقيقة."
         ];
 
         const wyrQuestions = [
             "تسافر البحر ولا تروح مكان كله خضرة وورد؟", "تاكل شوكولاتة طول العمر ولا تاكل فراولة بس؟",
             "تمشي تحت المطر ولا تقعد قدام البحر في الغروب؟", "تعيش في بيت على البحر ولا بيت في وسط حديقة كبيرة؟",
-            "ترجع بالزمن للماضي ولا تشوف المستقبل؟", "تلعب لعبة رياضية ولا تلعب فيديو جيمز؟",
-            "تاكل بيتزا طول حياتك ولا تاكل برجر؟", "تسافر بالطيارة ولا تعمل رحلة بالسيارة؟"
+            "ترجع بالزمن للماضي ولا تشوف المستقبل؟"
         ];
 
         function showChoiceScreen() {
@@ -430,28 +480,48 @@
         function generateContent(type) {
             const badge = document.getElementById('tag-badge');
             const qText = document.getElementById('question-text');
+            const textSection = document.getElementById('text-input-section');
+            const dareSection = document.getElementById('dare-input-section');
+            const answerInput = document.getElementById('user-answer');
+
+            answerInput.value = '';
 
             if (type === 'truth') {
                 badge.innerText = '💬 صراحة';
                 badge.className = 'tag-badge tag-truth';
                 qText.innerText = truthQuestions[Math.floor(Math.random() * truthQuestions.length)];
+                textSection.style.display = 'block';
+                dareSection.style.display = 'none';
+                answerInput.placeholder = 'اكتبي إجابتكِ الصادقة هنا... ✍️';
             } else if (type === 'dare') {
                 badge.innerText = '💥 تحدي جرأة';
                 badge.className = 'tag-badge tag-dare';
                 qText.innerText = dareChallenges[Math.floor(Math.random() * dareChallenges.length)];
+                textSection.style.display = 'none';
+                dareSection.style.display = 'block';
             } else if (type === 'wyr') {
                 badge.innerText = '🤔 لو خيروك';
                 badge.className = 'tag-badge tag-wyr';
                 qText.innerText = "لو خيروك: " + wyrQuestions[Math.floor(Math.random() * wyrQuestions.length)];
+                textSection.style.display = 'block';
+                dareSection.style.display = 'none';
+                answerInput.placeholder = 'اكتبي الخيار الذي اخترتهِ هنا... 💭';
             }
-
-            incrementProgress();
 
             document.getElementById('choice-screen').classList.remove('active');
             document.getElementById('result-screen').classList.add('active');
         }
 
-        // إحداث تحديث للمستوى فور فتح اللعبة
+        function submitAnswer() {
+            incrementProgress();
+            showChoiceScreen();
+        }
+
+        function submitDare(status) {
+            incrementProgress();
+            showChoiceScreen();
+        }
+
         updateLevelUI();
     </script>
 </body>
